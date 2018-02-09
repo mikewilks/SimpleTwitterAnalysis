@@ -5,5 +5,5 @@
 "access_token_secret" : "access_token_secret_here",
 "klout_key" : "klout_key_here",
 "file_of_ids" :  "/Full/Path/To/File/twitter_ids.txt",
-"output_file" : "/Fiull/Path/TYo/File/output.csv"
+"output_file" : "/Full/Path/TYo/File/output.csv"
 }
