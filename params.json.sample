@@ -3,7 +3,7 @@
 "consumer_secret" :  "consumer_secret_here",
 "access_token" : "access_token_here",
 "access_token_secret" : "access_token_secret_here",
-"klout_key" : "klout_key_here",
 "file_of_ids" :  "/Full/Path/To/File/twitter_ids.txt",
-"output_file" : "/Full/Path/TYo/File/output.csv"
+"output_file" : "/Full/Path/TYo/File/output.csv",
+"profile_keyword": "keyword_here"
 }
