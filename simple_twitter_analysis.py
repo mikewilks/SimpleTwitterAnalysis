@@ -1,4 +1,5 @@
-"""Simple Twitter Analysis of followers, tweets and last tweeted written to a CSV file."""
+"""Simple Twitter Analysis of followers, tweets, how many of their
+followers have a particular keyword in their profiles and last tweeted. Written to a CSV file."""
 import csv
 import datetime
 import json
@@ -70,19 +71,21 @@ def analyse(tweepy_api, ids, keyword_to_check):
                                   datetime.date.today()]
         else:
             # Get their followers and check for the presence
-            # of the keyword in it
-            followers = get_followers(tweepy_api, user_to_check)
-            instances_of_keyword = count_keywords_in_profile(tweepy_api,
+            # of the keyword in each followers profile / description
+            followers = get_followers(tweepy_api, i)
+            keyword_followers = count_keywords_in_profile(tweepy_api,
                                                              followers,
                                                              keyword_to_check)
+            print(f"{i} has {keyword_followers} "
+                  "followers with the keyword in their profile")
 
             # Build the data object to return
             analysed_data_item = [user_to_check.name,
                                   i,
                                   user_to_check.followers_count,
 
-                                  instances_of_keyword,
-                                  user_to_check.followers_count / instances_of_keyword,
+                                  keyword_followers,
+                                  (keyword_followers / user_to_check.followers_count) * 100,
                                   user_to_check.statuses_count,
                                   user_to_check.status.created_at.strftime('%d/%m/%Y'),
                                   datetime.date.today()]
@@ -91,18 +94,34 @@ def analyse(tweepy_api, ids, keyword_to_check):
     return analysed_data
 
 
+def get_users(input_list, tweepy_api):
+    """Returns the user objects from the given ids."""
+    users = []
+    length = len(input_list)
+    if length in range(1, 100):
+        print("length is less than 100 so just using the supplied list")
+        users = tweepy_api.lookup_users(input_list)
+    elif length > 100:
+        for i in range(0, len(input_list), 100):
+            print(i)
+            sublist = input_list[i:i + 100]
+            temp_results = tweepy_api.lookup_users(sublist)
+            for entry in temp_results:
+                users.append(entry)
+    return users
+
+
 def count_keywords_in_profile(tweepy_api, list_of_users, keyword_to_check):
     """Returns the number profiles containing the keyword in
     the list_of_users and returns it."""
+    # Get the actual user objects
+    users = get_users(list_of_users, tweepy_api)
     count = 0
-    # Iterating one at a time over the list of users will
-    # get rate-limited by the API very quickly better to
-    # use lookup_users not get_user
-    for user_id in list_of_users:
-        user_object = tweepy_api.get_user(user_id)
-        if keyword_to_check in user_object.description:
+    # Check the profiles (descriptions) for
+    # the keyword
+    for user in users:
+        if keyword_to_check in user.description:
             count += 1
-    print(f"{user_object.name} has {count} keyword followers")
     return count
 
 
@@ -113,6 +132,7 @@ def get_followers(tweepy_api, twitter_handle):
         followers_list.append(follower)
     return followers_list
 
+
 # Load the parameters from the json file
 params = load_parameters()
 
@@ -121,7 +141,8 @@ auth_token = authorise(params['consumer_key'], params['consumer_secret'], params
                        params['access_token_secret'])
 
 # Get the API object
-api = tweepy.API(auth_token)
+# api = tweepy.API(auth_token)
+api = tweepy.API(auth_token, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
 # Get the list of ids to analyse
 ids_to_check = load_ids_to_analyse(params['file_of_ids'])
