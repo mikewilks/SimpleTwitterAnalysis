@@ -87,14 +87,22 @@ def analyse(tweepy_api, ids, keyword_to_check):
             else:
                 percentage_of_followers = (keyword_followers / follower_count) * 100
 
+            # Protect again no tweets
+            # again could have caught the exception
+            number_of_tweets = user_to_check.statuses_count
+            if number_of_tweets > 0:
+                last_tweeted =  user_to_check.status.created_at.strftime('%d/%m/%Y')
+            else:
+                last_tweeted = 'Never'
+
             # Build the data object to return
             analysed_data_item = [user_to_check.name,
                                   i,
                                   follower_count,
                                   keyword_followers,
                                   percentage_of_followers,
-                                  user_to_check.statuses_count,
-                                  user_to_check.status.created_at.strftime('%d/%m/%Y'),
+                                  number_of_tweets,
+                                  last_tweeted,
                                   datetime.date.today()]
 
         analysed_data.append(analysed_data_item)
