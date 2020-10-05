@@ -73,19 +73,26 @@ def analyse(tweepy_api, ids, keyword_to_check):
             # Get their followers and check for the presence
             # of the keyword in each followers profile / description
             followers = get_followers(tweepy_api, i)
-            keyword_followers = count_keywords_in_profile(tweepy_api,
-                                                             followers,
-                                                             keyword_to_check)
+            keyword_followers = count_keywords_in_profile(tweepy_api, followers,
+                                                          keyword_to_check)
+
             print(f"{i} has {keyword_followers} "
                   "followers with the keyword in their profile")
+
+            # Protect against div by 0, could have caught
+            # the exception but this seems tidier
+            follower_count = user_to_check.followers_count
+            if follower_count == 0 or keyword_followers == 0:
+                percentage_of_followers = 0
+            else:
+                percentage_of_followers = (keyword_followers / follower_count) * 100
 
             # Build the data object to return
             analysed_data_item = [user_to_check.name,
                                   i,
-                                  user_to_check.followers_count,
-
+                                  follower_count,
                                   keyword_followers,
-                                  (keyword_followers / user_to_check.followers_count) * 100,
+                                  percentage_of_followers,
                                   user_to_check.statuses_count,
                                   user_to_check.status.created_at.strftime('%d/%m/%Y'),
                                   datetime.date.today()]
